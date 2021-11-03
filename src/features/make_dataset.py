@@ -2,8 +2,7 @@
 import click
 import logging
 from pathlib import Path
-from ground_data_preprocess import GroundDataProcessor
-from aerial_data_preprocess import AerialDataProcessor
+from build_features import FeatureBuilder
 from dotenv import find_dotenv, load_dotenv
 
 
@@ -14,23 +13,18 @@ def main(input_filepath, output_filepath):
     """ Runs data processing scripts to turn raw data from (../raw) into
         cleaned data ready to be analyzed (saved in ../processed).
     """
-    logger = logging.getLogger(__name__)
-    logger.info('making final data set from raw data')
-    gpreprocessor = GroundDataProcessor()
-    apreprocessor = AerialDataProcessor()
+    logger = logging.getLogger('__name__')
+    logger.info('making final data set from interm data')
+    feature_builder = FeatureBuilder()
 
-    logger.info('reading data')
-    gpreprocessor.read_data(input_filepath)
-    apreprocessor.read_data('data/raw/raw_forest_aerial_data.csv')
+    logger.info('reading interim data')
+    feature_builder.read_data(input_filepath)
 
     logger.info('processing data')
-    gpreprocessor.process_data()
-    apreprocessor.process_data()
-    
+    feature_builder.process_data()
 
     logger.info('saving processed data')
-    gpreprocessor.write_data(output_filepath)
-    apreprocessor.write_data('data/processed/')
+    feature_builder.write_data(output_filepath)
 
 
 if __name__ == '__main__':

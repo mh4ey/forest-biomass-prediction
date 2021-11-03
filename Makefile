@@ -9,6 +9,8 @@ BUCKET = [OPTIONAL] your-bucket-for-syncing-data (do not include 's3://')
 PROFILE = default
 PROJECT_NAME = forest-biomass-prediction
 PYTHON_INTERPRETER = python3
+SCBI_DATA_URL = https://raw.githubusercontent.com/SCBI-ForestGEO/SCBI-ForestGEO-Data/master/spatial_data/UTM%20coordinates/scbi_stem_utm_lat_long_2018.csv
+AERIAl_DATA_URL = https://zenodo.org/record/3765872/files/SCBI_2019.csv?download=1
 
 ifeq (,$(shell which conda))
 HAS_CONDA=False
@@ -25,9 +27,21 @@ requirements: test_environment
 	$(PYTHON_INTERPRETER) -m pip install -U pip setuptools wheel
 	$(PYTHON_INTERPRETER) -m pip install -r requirements.txt
 
-## Make Dataset
-data: requirements
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw data/processed
+#make Download dataset
+download: requirements
+	@echo ">>> Downloading data from SCBI website."
+	curl -o data/raw/raw_forest_ground_data.csv $(SCBI_DATA_URL)
+	@echo ">>> Downloading data from SCBI website."
+	curl -o data/raw/raw_forest_aerial_data.csv $(AERIAl_DATA_URL)
+
+## Make Dataset 1
+raw-data:
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw/raw_forest_ground_data_with_agb.csv data/interim/
+	
+
+## Make Dataset 2
+process-data:
+	$(PYTHON_INTERPRETER) src/features/make_dataset.py data/interim/interim_forest_ground_data_with_agb.csv data/processed/
 
 ## Delete all compiled Python files
 clean:
