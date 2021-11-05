@@ -57,6 +57,7 @@ jupyterlab-tabnine==0.0.24
 keras==2.6.0
 Keras-Preprocessing==1.1.2
 kiwisolver==1.3.2
+kaggle-cli
 Markdown==3.3.4
 MarkupSafe 
 matplotlib==3.4.3

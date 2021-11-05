@@ -36,7 +36,7 @@ download: requirements
 
 ## Make Dataset 1
 raw-data:
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw/raw_forest_ground_data_with_agb.csv data/interim/
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw/merged-census3-dbh-filtered.csv data/interim/
 	
 
 ## Make Dataset 2
