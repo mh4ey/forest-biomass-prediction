@@ -53,4 +53,8 @@ class FeatureBuilder:
 
     def write_data(self, processed_data_path):
         """Write processed data to directory."""
-        self.ground_interim_data.to_csv(processed_data_path + self.ground_data_processed_file, header=True, index=False)
+        plot1 = self.ground_interim_data[self.ground_interim_data['geo_index'] == '747000_4308000']
+        plot2 = self.ground_interim_data[self.ground_interim_data['geo_index'] == '747000_4309000']
+        plot1.to_csv(processed_data_path + 'plot1_' + self.ground_data_processed_file , header=True, index=False)
+        plot2.to_csv(processed_data_path + 'plot2_' + self.ground_data_processed_file , header=True, index=False)
+    

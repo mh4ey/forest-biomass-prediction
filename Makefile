@@ -36,12 +36,16 @@ download: requirements
 
 ## Make Dataset 1
 raw-data:
-	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw/merged-census3-dbh-filtered.csv data/interim/
+	$(PYTHON_INTERPRETER) src/data/make_dataset.py data/raw/cens3_agb_lat_lon_v2.csv data/interim/
 	
 
-## Make Dataset 2
-process-data:
+## process data
+process-data: raw-data
 	$(PYTHON_INTERPRETER) src/features/make_dataset.py data/interim/interim_forest_ground_data_with_agb.csv data/processed/
+
+## Make Dataset 
+match-trees: process-data
+	$(PYTHON_INTERPRETER) src/models/matching_algo.py 
 
 ## Delete all compiled Python files
 clean:

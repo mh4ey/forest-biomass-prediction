@@ -55,17 +55,7 @@ class GroundDataProcessor:
 
         self.ground_data_dead_tree_or_stem_census_codes = ['B','C', 'X' 'DS*', 'DC','DT', 'DN']
 
-        # aerial data file name
-        self.aerial_data_file = 'aerial_source_data.csv'
-        self.aerial_data_processed_file = 'aerial_processed_data.csv'
-
-        self.ground_data_usecols = ['treeID', 'stemID', 'Genus' ,'sp',
-                        'dbh', 'agb', 'codes', 'status', 
-                        'NAD83_X', 'NAD83_Y', 'lat', 'lon']
-
-        self.aerial_data_usecols= ['left', 'bottom', 'right', 'top',
-                        'score', 'height', 'area', 'geo_index']
-
+ 
         self.ground_data = pd.DataFrame()
 
     def read_data(self, raw_data_path):
@@ -77,9 +67,18 @@ class GroundDataProcessor:
         """Process raw data into useful files for model.
         Cleans the ground dataset
         """
+        # methods to add geo_index column
+        def subX(x):
+            return str(x)[0:3] +'000'
+        def subY(y):
+            return str(y)[0:4] +'000'
+        
+
         # sub select only columns we are interested in
         self.ground_data =  self.ground_data.rename(columns=self.ground_data_column_names)
         
+        #assign geo_index
+        self.ground_data = self.ground_data.assign(geo_index = self.ground_data['UTM_2018_X'].apply(subX) + '_' + self.ground_data['UTM_2018_Y'].apply(subY))
 
         # impute the missing tree status codes, if the data is missing we are assuming the tree to be main stem
         self.ground_data['census_codes']= np.where(self.ground_data['census_codes'].isnull(), 'main', self.ground_data['census_codes'])
@@ -100,7 +99,11 @@ class GroundDataProcessor:
         # ground_data.stem_diameter.describe(percentiles=[.25]).reset_index() = 14.0
         self.ground_data = self.ground_data[self.ground_data['stem_diameter'] > 14.0]
 
+        #filterout all trees having agb greater than 6000
+        self.ground_data = self.ground_data[self.ground_data['agb'] <= 6000.0]
+
     def write_data(self, processed_data_path):
         """Write processed data to directory."""
+
         self.ground_data.to_csv(processed_data_path + self.ground_data_clean_file, header=True, index=False)
-    
+
