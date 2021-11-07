@@ -60,3 +60,6 @@ Project Organization
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
 >>>>>>> 58397d6 (Initial Commit)
+
+Before running make requirements run the following command
+1. python -m pip install --upgrade pip 
