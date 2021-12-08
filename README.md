@@ -63,3 +63,5 @@ Project Organization
 
 Before running make requirements run the following command
 1. python -m pip install --upgrade pip 
+
+1. 
