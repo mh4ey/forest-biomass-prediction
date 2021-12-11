@@ -1,0 +1,247 @@
+---
+title: "agb_initial_modeling"
+author: "Paul Hicks, Jay Hombal, Francisco Estrada"
+date: "10/1/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Initial AGB Modeling
+
+We will first take in the data and look at using caret for both a linear regression (linear) and random forest model (non-linear). Our goal is to find a prototype model and also see how well our matching algorith performs. If we achieve a high value for adjusted R-squared, then we know we have a potential matching algorithm that could be validated against other data (forests) and refined for production.
+
+In terms of the data, we have data that has a "fuzzy" match in that the computed bin numbers can be within +/- 1 of each other for aerial and ground data during the matching algorithm. We also have an exact matching dataset in where the bins must be the same. As the exact match dataset proved higher in performance, we used that separately in ArcGIS to extract spectral data (RGB-values) from hi-resolution imagery. We end our analysis taking a look at the modeling with the RGB values added just to see where we could potentially carry the work forward and scale it up without the need for ground data. This scaling could include incorporation of hyper- or multi-spectral information from imagery sources and truly unlock the globe for more research and deployment of a model that helps meet some of the climate goals in Paris and most recently in Glasgow to gain net carbon neutrality.
+
+```{r get data}
+library(caret)
+library(tidyverse)
+```
+Data Sources. Ingestion and Pre-Processing.
+
+```{r ingest and split data}
+agb_data <- read.csv2("df_small.csv", header=TRUE,sep=',')
+str(agb_data)
+
+agb_data2 <- read.csv2("filter_exact_match_trees.csv", header = TRUE, sep = ',')
+View(agb_data2)
+```
+
+
+```{r ingest and split data}
+#agb_data3 <- read.csv2("all_matched_trees.csv", header = TRUE, sep = ',')
+rgb_data <-read.csv2('ds_with_rgb.csv', header=TRUE, sep=',')
+View(rgb_data)
+```
+
+
+```{r ingest and split data}
+rgb_data$RED <- as.numeric(rgb_data$RED)
+rgb_data$GREEN <- as.numeric(rgb_data$GREEN)
+rgb_data$BLUE <- as.numeric(rgb_data$BLUE)
+str(rgb_data)
+```
+
+
+```{r ingest and split data}
+View(agb_data3)
+
+
+```
+```{r}
+agb_data3$aerial_data_height <- as.numeric(agb_data3$aerial_data_height)
+str(agb_data3$aerial_data_height)
+str(agb_data2)
+agb_data2$aerial_data_height <- as.numeric(agb_data2$aerial_data_height)
+```
+
+
+```{r}
+agb_data3$area <- as.numeric(agb_data3$area)
+agb_data3$agb <- as.numeric(agb_data3$agb)
+
+agb_data2$area <- as.numeric(agb_data2$area)
+agb_data2$agb <- as.numeric(agb_data2$agb)
+str(agb_data3$agb)
+```
+
+# Linear Modeling.
+
+## Linear and Polynomial Regressions.
+
+Simple linear regression models using the exact matching algorithm data.
+
+```{r}
+lr1b <- train(agb~aerial_data_height+area, data=train_data,method='lm')
+summary(lr1b)
+
+lr1c <- train(agb~area+aerial_data_height, data=agb_data3,method='lm')
+summary(lr1c)
+```
+```{r}
+residuals <- resid(lr1c)
+preds <- predict(lr1c)
+plot(agb_data3$agb, residuals)
+abline(0,0)
+plot(agb_data3$agb, preds)
+```
+
+```{r}
+lr_simple <- train(agb~area, data=train_data,method='lm')
+summary(lr_simple)
+```
+
+```{r}
+res_simp <- resid(lr_simple)
+preds_simp <- predict(lr_simple)
+plot(train_data$agb, res_simp)
+abline(0,0)
+plot(train_data$agb, preds_simp)
+```
+
+Transformations.
+
+Given the residuals, we will try log transform of agb given the growth we see.
+
+```{r}
+train_data$log_agb <- log(train_data$agb)
+
+agb_data3$log_agb <- log(agb_data3$agb)
+
+agb_small <- agb_data3 %>% filter(adbin==gdbin)
+
+View(agb_small)
+```
+
+```{r}
+lr_rgb_logy <- train(log_agb~area+RED+GREEN+BLUE+aerial_data_height, data=rgb_data,method='lm')
+summary(lr_rgb_logy)
+```
+```{r}
+lr_rgb_logy2 <- train(log_agb~area+GREEN, data=rgb_data,method='lm')
+summary(lr_rgb_logy2)
+```
+
+```{r}
+lr_logy <- train(log_agb~aerial_data_height+area, data=agb_data3,method='lm')
+summary(lr_logy)
+
+lr_logy_small <- train(log_agb~aerial_data_height+area, data=agb_small,method='lm')
+summary(lr_logy_small)
+
+lr_logy2 <- train(log_agb~area, data=agb_data3,method='lm')
+summary(lr_logy2)
+```
+```{r}
+res_logy <- resid(lr_logy2)
+preds_logy <- predict(lr_logy2)
+plot(agb_data3$log_agb, res_logy)
+abline(0,0)
+plot(agb_data3$log_agb, preds_logy)
+```
+
+```{r}
+plot(log(train_data$area), train_data$log_agb)
+```
+
+
+Polynomial Fits.
+
+We will try polynomial regression models up to an order of 5.
+
+```{r}
+lr_logy_poly2 <- train(log_agb~poly(aerial_dataheight,2)+poly(area,2), data=agb_data3,method='lm')
+summary(lr_logy_poly2)
+```
+```{r}
+lr_logy_poly2b <- train(log_agb~aerial_data_height+poly(area,2), data=agb_data3,method='lm')
+summary(lr_logy_poly2b)
+```
+
+```{r}
+lr_logy_poly3 <- train(log_agb~aerial_data_height+poly(area,3), data=agb_data3,method='lm')
+summary(lr_logy_poly3) #0.6126
+
+lr_logy_poly3b <- train(log_agb~poly(aerial_data_height,3)+poly(area,3), data=agb_data3,method='lm')
+summary(lr_logy_poly3b) #0.6161
+```
+
+```{r}
+lr_logy_poly3c <- train(log_agb~poly(area,3), data=agb_data3,method='lm')
+summary(lr_logy_poly3c) #0.6101
+```
+
+
+```{r}
+lr_logy_poly4 <- train(log_agb~aerial_data_height+poly(area,4), data=agb_data3,method='lm')
+summary(lr_logy_poly4) #0.6494
+
+lr_logy_poly4_small <- train(log_agb~aerial_data_height+poly(area,4), data=agb_small,method='lm')
+summary(lr_logy_poly4_small)
+
+
+```
+
+```{r}
+lr_logy_poly5 <- train(log_agb~aerial_data_height+poly(area,5), data=agb_data3,method='lm')
+summary(lr_logy_poly5) #0.66
+
+lr_logy_poly5_small <- train(log_agb~aerial_data_height+poly(area,5), data=agb_small,method='lm')
+summary(lr_logy_poly5_small) #0.867
+```
+
+```{r}
+lr_poly3c <- train(agb~height+poly(area,3), data=train_data,method='lm')
+summary(lr_poly3c)
+```
+
+# Non-Linear Modeling.
+
+## Random Forest
+
+We want to investigate random forest modeling as a potential prototype model, given our expectation that it will have a high performance.
+
+```{r}
+rf1 <- train(agb~height+area, data=train_data,method='rf')
+rf1$results
+
+rf2 <- train(agb~aerial_data_height+area, data=agb_data3,method='rf')
+rf2$results #0.3737
+
+rf3 <- train(log_agb~aerial_data_height+area, data=agb_data3,method='rf')
+rf3$results #0.63
+
+rf3_small <- train(log_agb~aerial_data_height+area, data=agb_small,method='rf')
+rf3_small$results #0.63
+```
+
+```{r}
+rf_rgb <- train(log_agb~area+RED+GREEN+BLUE+ aerial_data_height, data=rgb_data,method='rf')
+rf_rgb$results
+```
+```{r}
+rf_rgb2 <- train(log_agb~area+RED+GREEN+BLUE, data=rgb_data,method='rf')
+rf_rgb2$results
+```
+```{r}
+vars_imp <- varImp(rf_rgb, scale=FALSE)
+vars_imp
+
+```
+
+## Data Capture
+
+We will capture some of our pre-processed data sets for further use.
+
+```
+
+```{r}
+#write_csv2(agb_small, 'agb_small.csv')
+```
+
+```{r}
+#write_csv(rgb_data,'rgb_data.csv')
+```
+
