@@ -79,7 +79,7 @@ pandocfilters
 parso 
 pexpect 
 pickleshare 
-Pillow==8.4.0
+Pillow==9.0.0
 plotly==5.3.1
 pluggy==1.0.0
 poyo==0.5.0
