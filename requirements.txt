@@ -18,7 +18,7 @@ charset-normalizer==2.0.7
 clang==5.0
 click 
 colorama==0.4.4
-cookiecutter==1.7.3
+cookiecutter==2.1.1
 cryptography 
 cycler==0.10.0
 debugpy 
