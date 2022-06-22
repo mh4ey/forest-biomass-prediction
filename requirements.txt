@@ -69,7 +69,7 @@ nbdime==3.1.0
 nbformat 
 nest-asyncio 
 notebook 
-numpy==1.19.5
+numpy==1.22.0
 oauthlib==3.1.1
 opt-einsum==3.3.0
 packaging 
