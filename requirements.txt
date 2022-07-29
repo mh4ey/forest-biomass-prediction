@@ -61,7 +61,7 @@ Markdown==3.3.4
 MarkupSafe 
 matplotlib==3.4.3
 matplotlib-inline 
-mistune==0.8.4
+mistune==2.0.3
 nbclassic 
 nbclient 
 nbconvert 
