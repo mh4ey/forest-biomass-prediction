@@ -11,7 +11,7 @@ binaryornot==0.4.4
 bleach 
 brotlipy==0.7.0
 cachetools==4.2.4
-certifi==2021.10.8
+certifi==2022.12.7
 cffi 
 chardet 
 charset-normalizer==2.0.7
