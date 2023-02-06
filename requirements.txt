@@ -70,7 +70,7 @@ nbformat
 nest-asyncio 
 notebook 
 numpy==1.19.5
-oauthlib==3.1.1
+oauthlib==3.2.2
 opt-einsum==3.3.0
 packaging 
 python-dotenv
