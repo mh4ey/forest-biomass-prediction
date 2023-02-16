@@ -128,7 +128,7 @@ ujson==4.2.0
 urllib3==1.26.7
 wcwidth 
 webencodings==0.5.1
-Werkzeug==2.0.2
+Werkzeug==2.2.3
 whichcraft==0.6.1
 wrapt==1.12.1
 zipp 
